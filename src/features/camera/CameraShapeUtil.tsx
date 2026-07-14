@@ -1,4 +1,4 @@
-import { BaseBoxShapeUtil, HTMLContainer, T, exportAs } from 'tldraw';
+import { BaseBoxShapeUtil, HTMLContainer, T } from 'tldraw';
 import { SHAPE_TYPES, UI_CONSTANTS } from '@/constants';
 import type { CameraShape } from './types';
 
@@ -44,10 +44,24 @@ export class CameraShapeUtil extends BaseBoxShapeUtil<CameraShape> {
       
       if (bounds && exportShapeIds.length > 0) {
         try {
-          await exportAs(this.editor, exportShapeIds, {
+          // Use the editor.toImage API to render the cropped canvas area directly to a Blob
+          const result = await this.editor.toImage(exportShapeIds, {
             format: 'png',
             bounds: bounds,
+            background: true, // Export with background
           });
+
+          if (result && result.blob) {
+            // Trigger an automatic programmatic browser download of the blob
+            const url = URL.createObjectURL(result.blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `capture-${Date.now()}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          }
         } catch (err) {
           console.error("Export failed:", err);
         }
