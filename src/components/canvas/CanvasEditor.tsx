@@ -1,5 +1,15 @@
-import React from 'react';
-import { Tldraw, Editor, TLUiOverrides, TLUiComponents, DefaultToolbar, DefaultToolbarContent, ToolbarItem } from 'tldraw';
+'use client';
+
+import React, { useMemo } from 'react';
+import {
+  Tldraw,
+  Editor,
+  TLUiOverrides,
+  TLUiComponents,
+  DefaultToolbar,
+  DefaultToolbarContent,
+  ToolbarItem,
+} from 'tldraw';
 import 'tldraw/tldraw.css';
 import type { PdfPageData } from '@/types';
 import { createPdfShapes } from '@/features/pdf/pdf-shapes';
@@ -14,52 +24,56 @@ interface CanvasEditorProps {
   pages: PdfPageData[];
 }
 
-const customShapeUtils = [PinShapeUtil, CameraShapeUtil];
-const customTools = [PinTool, CameraTool];
-const customBindingUtils = [PinBindingUtil];
+// These are stable references — defined at module level so React doesn't
+// re-create them each render, which would cause tldraw to remount.
+const SHAPE_UTILS = [PinShapeUtil, CameraShapeUtil];
+const TOOLS = [PinTool, CameraTool];
+const BINDING_UTILS = [PinBindingUtil];
 
-const uiOverrides: TLUiOverrides = {
+const UI_OVERRIDES: TLUiOverrides = {
   tools(editor, tools) {
     return {
       ...tools,
       [TOOL_IDS.PIN]: {
         id: TOOL_IDS.PIN,
-        icon: 'dot',
+        icon: 'dot' as const,
         label: 'Pin' as any,
         kbd: 'p',
-        onSelect: () => editor.setCurrentTool(TOOL_IDS.PIN),
+        onSelect() {
+          editor.setCurrentTool(TOOL_IDS.PIN);
+        },
       },
       [TOOL_IDS.CAMERA]: {
         id: TOOL_IDS.CAMERA,
-        icon: 'tool-frame', // Built-in frame icon representing a camera crop box
+        icon: 'tool-screenshot' as const, // camera/screenshot icon
         label: 'Camera' as any,
         kbd: 'c',
-        onSelect: () => editor.setCurrentTool(TOOL_IDS.CAMERA),
+        onSelect() {
+          editor.setCurrentTool(TOOL_IDS.CAMERA);
+        },
       },
     };
   },
 };
 
-const components: TLUiComponents = {
-  Toolbar: (props) => {
-    return (
-      <DefaultToolbar {...props}>
-        <DefaultToolbarContent />
-        <ToolbarItem tool={TOOL_IDS.PIN} />
-        <ToolbarItem tool={TOOL_IDS.CAMERA} />
-      </DefaultToolbar>
-    );
-  },
+// Custom toolbar that appends Pin and Camera after the default tools
+const COMPONENTS: TLUiComponents = {
+  Toolbar: (props) => (
+    <DefaultToolbar {...props}>
+      <DefaultToolbarContent />
+      <ToolbarItem tool={TOOL_IDS.PIN} />
+      <ToolbarItem tool={TOOL_IDS.CAMERA} />
+    </DefaultToolbar>
+  ),
 };
 
 export function CanvasEditor({ pages }: CanvasEditorProps) {
   const handleMount = (editor: Editor) => {
-    // When the editor mounts, and we have PDF pages, create the shapes
     if (pages && pages.length > 0) {
-      // Clear the canvas first just in case
+      // Clear any pre-existing shapes first
       editor.selectAll();
       editor.deleteShapes(editor.getSelectedShapeIds());
-      
+
       createPdfShapes(editor, pages);
     }
   };
@@ -68,11 +82,11 @@ export function CanvasEditor({ pages }: CanvasEditorProps) {
     <div className="h-full w-full">
       <Tldraw
         onMount={handleMount}
-        shapeUtils={customShapeUtils}
-        tools={customTools}
-        bindingUtils={customBindingUtils}
-        overrides={uiOverrides}
-        components={components}
+        shapeUtils={SHAPE_UTILS}
+        tools={TOOLS}
+        bindingUtils={BINDING_UTILS}
+        overrides={UI_OVERRIDES}
+        components={COMPONENTS}
         autoFocus
       />
     </div>
