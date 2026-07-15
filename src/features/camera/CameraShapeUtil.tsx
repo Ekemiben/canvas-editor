@@ -30,19 +30,25 @@ export class CameraShapeUtil extends BaseBoxShapeUtil<CameraShape> {
 
   override component(shape: CameraShape) {
     const handleExport = async (e: React.MouseEvent) => {
-      e.stopPropagation(); // prevent selecting the shape instead of clicking
+      e.preventDefault();
+      e.stopPropagation();
+      console.log("Camera capture triggered for shape:", shape.id);
       
       const allShapeIds = Array.from(this.editor.getCurrentPageShapeIds());
+      console.log("All shapes on page:", allShapeIds);
+
       // Filter out the camera shapes themselves so they aren't visible in the export
       const exportShapeIds = allShapeIds.filter(id => {
         const s = this.editor.getShape(id);
         return s && s.type !== 'camera';
       });
+      console.log("Shapes to export:", exportShapeIds);
 
       // Get page bounds of the camera
       const bounds = this.editor.getShapePageBounds(shape.id);
+      console.log("Camera bounds:", bounds);
       
-      if (bounds && exportShapeIds.length > 0) {
+      if (bounds) {
         try {
           // Use the editor.toImage API to render the cropped canvas area directly to a Blob
           const result = await this.editor.toImage(exportShapeIds, {
@@ -50,6 +56,8 @@ export class CameraShapeUtil extends BaseBoxShapeUtil<CameraShape> {
             bounds: bounds,
             background: true, // Export with background
           });
+
+          console.log("toImage result:", result);
 
           if (result && result.blob) {
             // Trigger an automatic programmatic browser download of the blob
@@ -61,11 +69,20 @@ export class CameraShapeUtil extends BaseBoxShapeUtil<CameraShape> {
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
+            console.log("Download triggered successfully.");
+          } else {
+            console.warn("No blob returned from toImage.");
           }
         } catch (err) {
           console.error("Export failed:", err);
         }
+      } else {
+        console.warn("Could not determine camera bounds.");
       }
+    };
+
+    const stopPropagation = (e: React.PointerEvent | React.MouseEvent) => {
+      e.stopPropagation();
     };
 
     return (
@@ -84,6 +101,8 @@ export class CameraShapeUtil extends BaseBoxShapeUtil<CameraShape> {
       >
         <button
           onClick={handleExport}
+          onPointerDown={stopPropagation}
+          onPointerUp={stopPropagation}
           style={{
             pointerEvents: 'all',
             padding: '4px 8px',
@@ -94,6 +113,7 @@ export class CameraShapeUtil extends BaseBoxShapeUtil<CameraShape> {
             cursor: 'pointer',
             fontSize: '12px',
             fontWeight: 'bold',
+            zIndex: 1000,
           }}
         >
           Capture
