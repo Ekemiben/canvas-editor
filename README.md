@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PDF Canvas Editor
+
+A lightweight frontend canvas editor built with Next.js, React, TypeScript, Tailwind CSS, and `tldraw`.
+
+The app lets users upload a PDF, renders each page as a locked canvas image, and adds two custom tools:
+
+- Pin Tool: drop a pin on the canvas and attach overlapping shapes together.
+- Camera Tool: draw a crop region and export the selected area as a PNG.
+
+## Features
+
+- Upload and render multi-page PDF files in the browser
+- Convert PDF pages to image assets for `tldraw`
+- Lock PDF page shapes to prevent accidental movement
+- Custom pin tool for attaching overlapping canvas objects
+- Custom camera tool for cropping and exporting content
+- Export captured canvas area as a PNG download
+
+## Tech Stack
+
+- Next.js 16 (App Router)
+- React 19
+- TypeScript
+- Tailwind CSS 4
+- `tldraw` editor framework
+- `pdfjs-dist` for PDF rendering
 
 ## Getting Started
 
-First, run the development server:
+1. Install dependencies:
 
-```bash
+    bash
+npm install
+
+
+2. Start the development server:
+
+    bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Open the app in your browser:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+    text
+http://localhost:3000
 
-## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+## Project Structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `src/app/page.tsx`: entry point that renders the editor shell
+- `src/components/canvas/MainView.tsx`: handles PDF upload state and switches between upload and editor views
+- `src/hooks/usePdfLoader.ts`: loads the PDF and tracks progress
+- `src/features/pdf`: builds PDF image assets and page shapes
+- `src/features/pin`: implements the custom pin tool and attachment binding behavior
+- `src/features/camera`: implements the camera crop tool and export interaction
+- `src/components/ui/DropZone.tsx`: drag-and-drop PDF upload UI
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Notes
 
-## Deploy on Vercel
+- PDF pages are rasterized as PNG assets for compatibility with `tldraw`
+- The current experience is optimized for a single PDF session per page load
+- Export currently supports PNG only
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Documentation
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `docs/ARCHITECTURE.md`
+- `docs/DECISIONS.md`
+- `docs/TRADEOFFS.md`
+- `docs/FUTURE_IMPROVEMENTS.md`
+- `docs/KNOWN_LIMITATIONS.md`
+- `docs/WALKTHROUGH.md`
